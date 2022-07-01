@@ -21,16 +21,17 @@ export class GildedRose {
   }
 
   updateQuality() {
-    this.items.forEach(item =>{
+    this.items.forEach(item => {
       if (this.isDegradable(item.name)) {
         this.decreaseQuality(item)
       }
       else {
         if (item.quality < 50) {
           item.quality = item.quality + 1;
+
           if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
             if (item.sellIn < 11) {
-             this.increaseQuality(item)
+              this.increaseQuality(item)
             }
             if (item.sellIn < 6) {
               this.increaseQuality(item)
@@ -39,30 +40,23 @@ export class GildedRose {
         }
       }
 
-      if (item.name != "Sulfuras, Hand of Ragnaros") {
-        item.sellIn = item.sellIn - 1
-      }
+      this.decreaseSellInOnlyForNormalItems(item)
 
       if (item.sellIn < 0) {
         if (item.name != "Aged Brie") {
-          if (
-            item.name != "Backstage passes to a TAFKAL80ETC concert"
-          ) {
-            if (item.quality > 0) {
-              if (item.name != "Sulfuras, Hand of Ragnaros") {
-                item.quality = item.quality - 1
-              }
-            }
-          } else {
-            item.quality =
-              item.quality - item.quality
+          if (item.name != "Backstage passes to a TAFKAL80ETC concert") {
+            this.decreaseQuality(item)
+          }
+          else {
+            item.quality = item.quality - item.quality
           }
         } else {
           if (item.quality < 50) {
-            item.quality = item.quality + 1
+            this.increaseQuality(item)
           }
         }
       }
+
     })
 
     return this.items
@@ -84,9 +78,15 @@ export class GildedRose {
     return !nonDegradables.includes(item);
   }
 
-  private increaseQuality(item: Item, increment: number = 1) {
+  private increaseQuality(item: Item) {
     if (item.quality < this.maxItemQuality) {
-      item.quality = item.quality + increment;
+      item.quality = item.quality + 1;
+    }
+  }
+
+  private decreaseSellInOnlyForNormalItems(item: Item) {
+    if (item.name != "Sulfuras, Hand of Ragnaros") {
+      item.sellIn = item.sellIn - 1
     }
   }
 }
