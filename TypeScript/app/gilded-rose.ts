@@ -23,7 +23,7 @@ export class GildedRose {
   updateQuality() {
     this.items.forEach(item => {
       if (this.isDegradable(item.name)) {
-        this.decreaseQuality(item)
+        this.decreaseQualityForNormalItem(item)
       }
       else {
         if (item.quality < 50) {
@@ -42,27 +42,27 @@ export class GildedRose {
 
       this.decreaseSellInOnlyForNormalItems(item)
 
-      if (item.sellIn < 0) {
-        if (item.name != "Aged Brie") {
-          if (item.name != "Backstage passes to a TAFKAL80ETC concert") {
-            this.decreaseQuality(item)
-          }
-          else {
-            item.quality = item.quality - item.quality
-          }
-        } else {
-          if (item.quality < 50) {
-            this.increaseQuality(item)
-          }
-        }
+      if (item.sellIn >= 0) {
+        return
       }
 
+      if (this.isDegradable(item.name)) {
+        this.decreaseQualityForNormalItem(item)
+        return
+      }
+
+      if (item.name === "Backstage passes to a TAFKAL80ETC concert") {
+        this.decreaseQualityToZero(item)
+        return
+      }
+
+      this.increaseQuality(item)
     })
 
     return this.items
   }
 
-  private decreaseQuality(i: Item) {
+  private decreaseQualityForNormalItem(i: Item) {
     if (i.quality > 0) {
       if (i.name != "Sulfuras, Hand of Ragnaros") {
         i.quality = i.quality - 1;
@@ -70,12 +70,12 @@ export class GildedRose {
     }
   }
 
-  private isDegradable(item: string): boolean {
+  private isDegradable(itemName: string): boolean {
     const nonDegradables = [
       "Aged Brie",
       "Backstage passes to a TAFKAL80ETC concert",
-    ];
-    return !nonDegradables.includes(item);
+    ]
+    return !nonDegradables.includes(itemName);
   }
 
   private increaseQuality(item: Item) {
@@ -88,5 +88,9 @@ export class GildedRose {
     if (item.name != "Sulfuras, Hand of Ragnaros") {
       item.sellIn = item.sellIn - 1
     }
+  }
+
+  private decreaseQualityToZero(item: Item) {
+    item.quality = item.quality - item.quality
   }
 }
