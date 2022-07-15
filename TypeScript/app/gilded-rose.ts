@@ -1,65 +1,51 @@
 export class Item {
-  name: string
-  sellIn: number
-  quality: number
+  name: string;
+  sellIn: number;
+  quality: number;
 
   constructor(name, sellIn, quality) {
-    this.name = name
-    this.sellIn = sellIn
-    this.quality = quality
-
+    this.name = name;
+    this.sellIn = sellIn;
+    this.quality = quality;
   }
 }
 
 export class GildedRose {
-  items: Array<Item>
-  maxItemQuality: number
+  items: Array<Item>;
+  maxItemQuality: number;
 
   constructor(items = [] as Array<Item>) {
-    this.items = items
-    this.maxItemQuality = 50
+    this.items = items;
+    this.maxItemQuality = 50;
   }
 
   updateQuality() {
-    this.items.forEach(item => {
-      if (this.isDegradable(item.name)) {
-        this.decreaseQualityForNormalItem(item)
-      }
-      else {
-        if (item.quality < 50) {
-          item.quality = item.quality + 1;
+    this.items.forEach((item) => {
+      this.isDegradable(item.name)
+        ? this.updateDegradableItem(item)
+        : this.updateNonDegradables(item);
+    });
 
-          if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
-            if (item.sellIn < 11) {
-              this.increaseQuality(item)
-            }
-            if (item.sellIn < 6) {
-              this.increaseQuality(item)
-            }
-          }
-        }
-      }
+    return this.items;
+  }
 
-      this.decreaseSellInOnlyForNormalItems(item)
+  private updateDegradableItem(item: Item) {
+    this.decreaseQualityForNormalItem(item);
+    this.decreaseSellInOnlyForNormalItems(item);
 
-      if (item.sellIn >= 0) {
-        return
-      }
+    if (this.isItemExpired(item.sellIn)) {
+      return;
+    }
 
-      if (this.isDegradable(item.name)) {
-        this.decreaseQualityForNormalItem(item)
-        return
-      }
+    this.decreaseQualityForNormalItem(item);
+  }
 
-      if (item.name === "Backstage passes to a TAFKAL80ETC concert") {
-        this.decreaseQualityToZero(item)
-        return
-      }
-
-      this.increaseQuality(item)
-    })
-
-    return this.items
+  private isDegradable(itemName: string): boolean {
+    const nonDegradables = [
+      "Aged Brie",
+      "Backstage passes to a TAFKAL80ETC concert",
+    ];
+    return !nonDegradables.includes(itemName);
   }
 
   private decreaseQualityForNormalItem(i: Item) {
@@ -70,12 +56,8 @@ export class GildedRose {
     }
   }
 
-  private isDegradable(itemName: string): boolean {
-    const nonDegradables = [
-      "Aged Brie",
-      "Backstage passes to a TAFKAL80ETC concert",
-    ]
-    return !nonDegradables.includes(itemName);
+  private isItemExpired(sellIn: number) {
+    return sellIn >= 0;
   }
 
   private increaseQuality(item: Item) {
@@ -84,13 +66,42 @@ export class GildedRose {
     }
   }
 
+  private increaseQualityForBackstage(item: Item) {
+    if (item.quality < this.maxItemQuality && item.sellIn < 11) {
+      item.quality = item.quality + 1;
+    }
+    if (item.quality < this.maxItemQuality && item.sellIn < 6) {
+      item.quality = item.quality + 1;
+    }
+  }
+
   private decreaseSellInOnlyForNormalItems(item: Item) {
     if (item.name != "Sulfuras, Hand of Ragnaros") {
-      item.sellIn = item.sellIn - 1
+      item.sellIn = item.sellIn - 1;
     }
   }
 
   private decreaseQualityToZero(item: Item) {
-    item.quality = item.quality - item.quality
+    item.quality = 0;
+  }
+
+  private updateNonDegradables(item: Item) {
+    this.increaseQuality(item);
+    if (item.name == "Backstage passes to a TAFKAL80ETC concert") {
+      this.increaseQualityForBackstage(item);
+    }
+
+    this.decreaseSellInOnlyForNormalItems(item);
+
+    if (this.isItemExpired(item.sellIn)) {
+      return;
+    }
+
+    if (item.name === "Backstage passes to a TAFKAL80ETC concert") {
+      this.decreaseQualityToZero(item);
+      return;
+    }
+
+    this.increaseQuality(item);
   }
 }
